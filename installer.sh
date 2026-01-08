@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# Ensure we are using bash
+if [ -z "$BASH_VERSION" ]; then
+  echo "Error: This script must be run with bash." >&2
+  exit 1
+fi
+
+set -euo
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -30,10 +36,9 @@ echo
 read -p "Type the number you want to run: " choice
 
 # --- Functions ---
-
 panel_install() {
     echo -e "${GREEN}Installing Pterodactyl Panel...${RESET}"
-    read -p "Enter your panel URL (example: panel.cosmic-cloud.fun): " PANEL_URL
+    read -p "Enter your panel domain (example: panel.cosmic-cloud.fun): " PANEL_DOMAIN
     read -p "Enter admin email: " ADMIN_EMAIL
     read -p "Enter admin username: " ADMIN_USER
     read -sp "Enter admin password: " ADMIN_PASS
@@ -52,12 +57,13 @@ panel_install() {
     composer install --no-dev --optimize-autoloader
     php artisan key:generate --force
 
+    # Create admin user
     php artisan p:user:make --email="$ADMIN_EMAIL" --username="$ADMIN_USER" --password="$ADMIN_PASS" --admin
 
     chown -R www-data:www-data "$PANEL_PATH"
     chmod -R 755 "$PANEL_PATH"
 
-    echo -e "${GREEN}Panel installed! Visit https://$PANEL_URL${RESET}"
+    echo -e "${GREEN}Panel installed! Visit https://${PANEL_DOMAIN}${RESET}"
 }
 
 wings_install() {
