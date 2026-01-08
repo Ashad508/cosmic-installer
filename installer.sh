@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
-# Ensure we are using bash
-if [ -z "$BASH_VERSION" ]; then
-  echo "Error: This script must be run with bash." >&2
-  exit 1
-fi
-
-set -euo
+# Minimal compatibility: removed pipefail
+set -eu
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -23,7 +18,7 @@ echo " ██╔════╝██╔═══██╗██╔════�
 echo " ██║     ██║   ██║█████╗  █████╗  ██║     ██║     █████╗  "
 echo " ██║     ██║   ██║██╔══╝  ██╔══╝  ██║     ██║     ██╔══╝  "
 echo " ╚██████╗╚██████╔╝███████╗███████╗╚██████╗███████╗███████╗"
-echo "  ╚═════╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝╚══════╝╚══════╝"
+echo "  ╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚═════╝╚══════╝╚══════╝"
 echo -e "${RESET}"
 echo -e "${YELLOW}Welcome to the Cosmic Cloud Installer!${RESET}"
 echo
@@ -80,8 +75,8 @@ wings_install() {
 blueprint_install() {
     echo -e "${GREEN}Installing Blueprint...${RESET}"
     apt-get install -y ca-certificates curl gnupg
-    sudo mkdir -p /etc/apt/keyrings
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
     echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
     apt-get update
     apt-get install -y nodejs zip unzip git curl wget
