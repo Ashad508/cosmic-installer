@@ -115,4 +115,5 @@ blueprint_install() {
     | grep browser_download_url | cut -d '"' -f 4)" -O blueprint.zip
 
   unzip blueprint.zip
-  chmod +x blueprin
+  chmod +x blueprint
+
