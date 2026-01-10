@@ -3,79 +3,99 @@
 set -e
 clear
 
-echo "========================================="
-echo "   Ryzo Cloud Pterodactyl Installer"
-echo "   Panel + Wings | Ubuntu Only"
-echo "   Made by Arnav Sharma"
-echo "========================================="
+# ==================================================
+#        Cosmic Cloud Panel Installer
+#                By Shadow_Slayer
+#   Pterodactyl Panel & Wings Installer
+#   Supports: Ubuntu / Debian
+# ==================================================
+
 sleep 2
 
-# Root check
-if [ "$EUID" -ne 0 ]; then
-  echo "❌ Please run as root"
-  exit 1
+# --------------------------------------------------
+# Root Permission Check
+# --------------------------------------------------
+if [[ "$EUID" -ne 0 ]]; then
+    echo "❌ Please run this installer as root."
+    exit 1
 fi
 
-# OS check
-if ! grep -qi ubuntu /etc/os-release; then
-  echo "❌ This installer supports Ubuntu And Debain only"
-  exit 1
+# --------------------------------------------------
+# Operating System Check
+# --------------------------------------------------
+if ! grep -qiE "ubuntu|debian" /etc/os-release; then
+    echo "❌ This installer supports Ubuntu and Debian only."
+    exit 1
 fi
 
-# Menu
+# --------------------------------------------------
+# Installation Menu
+# --------------------------------------------------
 echo ""
+echo "=========== Cosmic Cloud Installer ==========="
 echo "1) Install Pterodactyl Panel"
 echo "2) Install Pterodactyl Wings"
 echo "3) Install Panel + Wings"
 echo "4) Exit"
+echo "=============================================="
 echo ""
-read -p "Select option: " option
 
-case $option in
+read -rp "Select an option: " OPTION
 
-1)
-echo "▶ Installing Pterodactyl Panel"
-;;
-
-2)
-echo "▶ Installing Pterodactyl Wings"
-;;
-
-3)
-echo "▶ Installing Panel + Wings"
-;;
-
-4)
-exit 0
-;;
-
-*)
-echo "❌ Invalid option"
-exit 1
-;;
+case "$OPTION" in
+    1)
+        echo "▶ Installing Pterodactyl Panel..."
+        ;;
+    2)
+        echo "▶ Installing Pterodactyl Wings..."
+        ;;
+    3)
+        echo "▶ Installing Panel + Wings..."
+        ;;
+    4)
+        echo "👋 Exiting installer."
+        exit 0
+        ;;
+    *)
+        echo "❌ Invalid option selected."
+        exit 1
+        ;;
 esac
 
-# Common packages
+# --------------------------------------------------
+# Required Packages
+# --------------------------------------------------
+echo "📦 Installing required packages..."
 apt update -y
 apt install -y curl wget sudo unzip tar software-properties-common
 
-# Docker install (for Wings)
+# --------------------------------------------------
+# Docker Installation (Required for Wings)
+# --------------------------------------------------
 install_docker() {
-  if ! command -v docker &>/dev/null; then
-    echo "🐳 Installing Docker..."
-    curl -fsSL https://get.docker.com | bash
-    systemctl enable docker
-    systemctl start docker
-  fi
+    if ! command -v docker &>/dev/null; then
+        echo "🐳 Installing Docker..."
+        curl -fsSL https://get.docker.com | bash
+        systemctl enable docker
+        systemctl start docker
+    else
+        echo "✅ Docker is already installed."
+    fi
 }
 
-# Wings install
+# --------------------------------------------------
+# Wings Installation
+# --------------------------------------------------
 install_wings() {
-  install_docker
-  echo "🛠 Installing Wings..."
-  mkdir -p /etc/pterodactyl
-  curl -L -o /usr/local/bin/wings https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64
-  chmod +x /usr/local/bin/wings
+    install_docker
+    echo "🛠 Installing Pterodactyl Wings..."
+
+    mkdir -p /etc/pterodactyl
+
+    curl -L -o /usr/local/bin/wings \
+        https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64
+
+    chmod +x /usr/local/bin/wings
 
 cat <<EOF >/etc/systemd/system/wings.service
 [Unit]
@@ -92,3 +112,10 @@ LimitNOFILE=4096
 
 [Install]
 WantedBy=multi-user.target
+EOF
+
+    systemctl daemon-reload
+    systemctl enable --now wings
+
+    echo "✅ Wings installed and started successfully."
+}
